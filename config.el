@@ -253,10 +253,18 @@
 ;;  (define-key org-mode-map (kbd "C-c C-;") 'org-ref-helm-insert-cite-link))
   (define-key org-mode-map (kbd "C-c C-;") 'org-ref-ivy-insert-cite-link))
 
-(setq org-journal-date-prefix "#+TITLE:"
-      org-journal-time-prefix "* "
-      org-journal-date-format "%a, %Y-%m-%d"
-      org-journal-file-format "%Y-%m-%d.org")
+(use-package org-journal
+  :ensure t
+  :defer t
+  :init
+  ;; Change default prefix key; needs to be set before loading org-journal
+  (setq org-journal-prefix-key "C-c j ")
+  :config
+  (setq org-journal-dir "~/Documents/Orgs/journal/"
+        org-journal-date-prefix "#+TITLE:"
+        org-journal-time-prefix "* "
+        org-journal-date-format "%a, %Y-%m-%d"
+        org-journal-file-format "%Y-%m-%d.org"))
 
 (add-hook 'org-mode-hook 'org-roam)
 (setq org-roam-directory "~/Documents/Orgs/roam")

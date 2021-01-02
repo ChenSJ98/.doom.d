@@ -5,7 +5,7 @@ This is my personal Emacs configurations based on [[https://github.com/hlissner/
 
 Thanks to the /tangle/ feature of org-mode, I can use =config.org= file to manage my configurations. Actually, =readme.org= is a soft link to =config.org=.
 
-Minor tweaks on color scheme are in =customization.el=.
+Minor tweaks on color scheme are in =custom.el=.
 * Emacs Configuration
 ** User Settings
 #+begin_src emacs-lisp
@@ -323,10 +323,18 @@ Add citations easily in org mode.
 #+end_src
 ** Org Journal
 #+begin_src emacs-lisp
-(setq org-journal-date-prefix "#+TITLE:"
-      org-journal-time-prefix "* "
-      org-journal-date-format "%a, %Y-%m-%d"
-      org-journal-file-format "%Y-%m-%d.org")
+(use-package org-journal
+  :ensure t
+  :defer t
+  :init
+  ;; Change default prefix key; needs to be set before loading org-journal
+  (setq org-journal-prefix-key "C-c j ")
+  :config
+  (setq org-journal-dir "~/Documents/Orgs/journal/"
+        org-journal-date-prefix "#+TITLE:"
+        org-journal-time-prefix "* "
+        org-journal-date-format "%a, %Y-%m-%d"
+        org-journal-file-format "%Y-%m-%d.org"))
 #+end_src
 ** Org roam
 #+begin_src emacs-lisp
