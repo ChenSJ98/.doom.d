@@ -21,17 +21,11 @@
 (bind-keys* ("C-c ;" . iedit-mode) ;; "C-c ;" used to be 'org-toggle-comment'
             ("C-;" . flyspell-auto-correct-previous-word))
 
+;; Configure ivy backend for swiper, org-ref, and the rest.
 (setq ivy-re-builders-alist
       '((swiper-isearch . ivy--regex-plus)
         (org-ref-ivy-insert-cite-link . ivy--regex-ignore-order)
         (t . ivy--regex-fuzzy))) ;; use fuzzy matching.
-
-;;      '((t . ivy--regex-plus)))
-;; mix fuzzy and exact regex
-;;(setq ivy-re-builders-alist
-;;      '((ivy-switch-buffer . ivy--regex-plus)
-;;        (t . ivy--regex-fuzzy)))
-
 (setq ivy-initial-inputs-alist nil);; Fuzzy all the way! Otherwise, start input with '^' for fuzzy mathcing.
 (use-package ivy
   :init (setq ivy-use-virtual-buffers t)
@@ -43,17 +37,22 @@
   (global-set-key (kbd "C-c g") 'counsel-git)
   (global-set-key (kbd "C-c j") 'counsel-git-grep)
   (global-set-key (kbd "C-c k") 'counsel-ag)
-  (global-set-key (kbd "C-s") 'swiper-isearch)
+  (global-set-key (kbd "C-s") 'swiper-isearch) ;; Use Swiper to replace isearch.
   (counsel-mode 1))
-
-(setq doom-font (font-spec :family "SauceCodePro Nerd Font Mono" :size 20)
-      doom-variable-pitch-font (font-spec :family "Ubuntu" :size 20)
-      doom-big-font (font-spec :family "SauceCodePro Nerd Font Mono" :size 24))
 
 ;; Lose UI
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+
+(setq doom-font (font-spec :family "SauceCodePro Nerd Font Mono" :size 20)
+      doom-variable-pitch-font (font-spec :family "Ubuntu" :size 20)
+      doom-big-font (font-spec :family "SauceCodePro Nerd Font Mono" :size 24))
+
+;; Use slant font for comments and keywords.
+(custom-set-faces!
+  '(font-lock-keyword-face :slant italic)
+  '(font-lock-comment-face :slant italic))
 
 (setq user-full-name "Shijie Chen"
       user-mail-address "chrischen369@outlook.com")
@@ -74,8 +73,9 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-;;(setq doom-theme 'doom-one)
-(setq doom-theme 'my-doom-oceanic-next)
+;;(setq doom-theme 'doom-one) ;; The default doom theme.
+(setq doom-theme 'doom-oceanic-next)
+
 ;;(setq display-line-numbers-type nil)
 ;;      doom-line-numbers-style 'relative) ;; Use relative line number
 
@@ -83,13 +83,7 @@
   (setq doom-themes-enable-bold t
         doom-themes-enable-italic t
         display-line-numbers-type nil))
-(custom-set-faces!
-  '(font-lock-keyword-face :slant italic)
-  '(font-lock-comment-face :slant italic))
 
-;; Always highlight search result
-(setq isearch-allow-scroll t)
-(setq isearch-lazy-count t)
 ;; clashes with spell-fu mode.
 (setq ispell-program-name "aspell")
 (setq ispell-extra-args '("--sug-mode=ultra" "--lang=en_US"))
@@ -99,6 +93,10 @@
 (setq-default ispell-program-name "aspell")
 ;; use American English as ispell default dictionary
 (ispell-change-dictionary "american" t)
+
+;; Always highlight search result
+(setq isearch-allow-scroll t)
+(setq isearch-lazy-count t)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
@@ -203,27 +201,6 @@
 ;;           "|"                 ; The pipe necessary to separate "active" states and "inactive" states
 ;;           "DONE(d)"           ; Task has been completed
 ;;           "CANCELLED(c)" ) ; Task has been cancelled
-;;(setq doom-font (font-spec :family "Source Code Pro" :size 15)
-;;      doom-variable-pitch-font(font-spec :family "Source Code Pro" :size 15))
-;;(setq doom-font (font-spec :family "Mononoki Nerd Font" :size 15);
-;;      doom-variable-pitch-font(font-spec :family "Mononoki Nerd Font" :size 15))
-
-;; Here are some additional functions/macros that could help you configure Doom:
-;;
-;; - `load!' for loading external *.el files relative to this one
-;; - `use-package!' for configuring packages
-;; - `after!' for running code after a package has loaded
-;; - `add-load-path!' for adding directories to the `load-path', relative to
-;;   this file. Emacs searches the `load-path' when you load packages with
-;;   `require' or `use-package'.
-;; - `map!' for binding new keys
-;;
-;; To get information about any of these functions/macros, move the cursor over
-;; the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
-;; This will open documentation for it, including demos of how they are used.
-;;
-;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
-;; they are implemented.
 
 (defun org-export-latex-no-toc (depth)
     (when depth
@@ -262,15 +239,6 @@
       (format "%% Org-mode is exporting headings to %s levels.\n"
               depth))))
 
-(setq org-journal-date-prefix "#+TITLE:"
-      org-journal-time-prefix "* "
-      org-journal-date-format "%a, %Y-%m-%d"
-      org-journal-file-format "%Y-%m-%d.org")
-
-(add-hook 'org-mode-hook 'org-roam)
-(setq org-roam-directory "~/Documents/Orgs/roam")
-(setq org-roam-completion-everywhere t)
-
 (setq org-ref-completion-library 'org-ref-ivy-cite)
 (require 'org-ref)
 (setq org-ref-ivy-cite-re-builder nil)
@@ -284,6 +252,15 @@
   (define-key org-mode-map (kbd "C-c <C-i>") 'org-mark-ring-goto)
 ;;  (define-key org-mode-map (kbd "C-c C-;") 'org-ref-helm-insert-cite-link))
   (define-key org-mode-map (kbd "C-c C-;") 'org-ref-ivy-insert-cite-link))
+
+(setq org-journal-date-prefix "#+TITLE:"
+      org-journal-time-prefix "* "
+      org-journal-date-format "%a, %Y-%m-%d"
+      org-journal-file-format "%Y-%m-%d.org")
+
+(add-hook 'org-mode-hook 'org-roam)
+(setq org-roam-directory "~/Documents/Orgs/roam")
+(setq org-roam-completion-everywhere t)
 
 (add-hook 'org-mode-hook 'turn-on-flyspell)
 
