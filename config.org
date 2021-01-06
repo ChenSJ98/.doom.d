@@ -39,8 +39,20 @@ Minor tweaks on color scheme are in =custom.el=.
 (global-set-key (kbd "C-w") 'kill-region)
 (bind-keys* ("C-c ;" . iedit-mode) ;; "C-c ;" used to be 'org-toggle-comment'
             ("C-;" . flyspell-auto-correct-previous-word))
+;;Exit insert mode by pressing j and then j quickly
+(after! 'evil-maps
+  (setq key-chord-two-keys-delay 0.1)
+  (key-chord-define evil-insert-state-map "jj" 'evil-normal-state)
+  (key-chord-mode 1)
+)
 #+end_src
+
+#+RESULTS:
+: Key Chord mode on
+
 *** Ivy, Counsel, and Swiper
+**** Configure Ivy backend
+
 #+begin_src emacs-lisp
 ;; Configure ivy backend for swiper, org-ref, and the rest.
 (setq ivy-re-builders-alist
@@ -48,7 +60,27 @@ Minor tweaks on color scheme are in =custom.el=.
         (org-ref-ivy-insert-cite-link . ivy--regex-ignore-order)
         (t . ivy--regex-fuzzy))) ;; use fuzzy matching.
 
-;; Ref http://pragmaticemacs.com/emacs/search-or-swipe-for-the-current-word/
+;; Fuzzy all the way! Otherwise, start input with '^' for fuzzy mathcing.
+(setq ivy-initial-inputs-alist nil)
+(use-package ivy
+  :init (setq ivy-use-virtual-buffers t)
+  :config
+  (global-set-key (kbd "C-c C-r") 'ivy-resume)
+  (ivy-mode 1))
+(use-package counsel
+  :config
+  (global-set-key (kbd "C-c g") 'counsel-git)
+  (global-set-key (kbd "C-c j") 'counsel-git-grep)
+  (global-set-key (kbd "C-c k") 'counsel-ag)
+  (global-set-key (kbd "C-s") 'swiper-isearch) ;; Use Swiper to replace isearch.
+  (counsel-mode 1))
+#+end_src
+
+**** Add ivy-yank-whole-word
+Introduce =ivy-yank-whole-word=, implemented by [[http://pragmaticemacs.com/emacs/search-or-swipe-for-the-current-word/][Pragmatic]].
+Now =C-s M-j= runs =swiper= on the word under the cursor.
+#+begin_src emacs-lisp
+;;
 ;; version of ivy-yank-word to yank from start of word
 (defun bjm/ivy-yank-whole-word ()
   "Pull next word from buffer into search string."
@@ -65,23 +97,9 @@ Minor tweaks on color scheme are in =custom.el=.
           (setq amend (buffer-substring-no-properties pt (point))))))
     (when amend
       (insert (replace-regexp-in-string "  +" " " amend)))))
-
 ;; bind it to M-j
 (define-key ivy-minibuffer-map (kbd "M-j") 'bjm/ivy-yank-whole-word)
 
-(setq ivy-initial-inputs-alist nil);; Fuzzy all the way! Otherwise, start input with '^' for fuzzy mathcing.
-(use-package ivy
-  :init (setq ivy-use-virtual-buffers t)
-  :config
-  (global-set-key (kbd "C-c C-r") 'ivy-resume)
-  (ivy-mode 1))
-(use-package counsel
-  :config
-  (global-set-key (kbd "C-c g") 'counsel-git)
-  (global-set-key (kbd "C-c j") 'counsel-git-grep)
-  (global-set-key (kbd "C-c k") 'counsel-ag)
-  (global-set-key (kbd "C-s") 'swiper-isearch) ;; Use Swiper to replace isearch.
-  (counsel-mode 1))
 #+end_src
 ** Basic UI
 *** The Emacs Window
@@ -133,7 +151,20 @@ Minor tweaks on color scheme are in =custom.el=.
 (after! doom-themes
   (setq doom-themes-enable-bold t
         doom-themes-enable-italic t
-        display-line-numbers-type nil))
+        display-line-numbers-type nil)
+  (custom-theme-set-faces
+   'doom-oceanic-next
+   '(org-block ((t (:extend t :background "#14232E"))))
+   '(org-block-begin-line ((t (:extend t :background "#14232E" :foreground "#65737E"))))
+   '(org-block-end-line ((t (:inherit org-block-begin-line :extend t :background "#14232E")))))
+  )
+(after! modus-themes
+(custom-theme-set-faces
+ 'modus-operandi
+ '(org-block ((t (:extend t :background "#555555"))))
+ '(org-block-begin-line ((t (:extend t :background "#14232E" :foreground "#555555"))))
+ '(org-block-end-line ((t (:inherit org-block-begin-line :extend t :background "#555555")))))
+ )
 #+end_src
 ** Spell Check
 #+begin_src emacs-lisp
@@ -184,6 +215,7 @@ Minor tweaks on color scheme are in =custom.el=.
 (add-hook 'org-mode-hook (lambda ()
                            (add-hook 'after-save-hook 'efs/org-babel-tangle-config)))
 #+end_src
+
 
 ** Appearance
 *** Line number
@@ -361,6 +393,7 @@ Add citations easily in org mode.
 ** Org roam
 #+begin_src emacs-lisp
 (add-hook 'org-mode-hook 'org-roam)
+(add-hook 'org-mode-hook 'org-roam-buffer-toggle-display)
 (setq org-roam-directory "~/Documents/Orgs/roam")
 (setq org-roam-completion-everywhere t)
 #+end_src
@@ -405,3 +438,8 @@ md-roam and wiki-link support.
 #+end_src
 
 #  LocalWords:  Swiper Smex
+* Auctex
+#+begin_src emacs-lisp
+(setq-default TeX-engine 'xetex)
+
+#+end_src

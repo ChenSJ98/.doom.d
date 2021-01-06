@@ -20,6 +20,12 @@
 (global-set-key (kbd "C-w") 'kill-region)
 (bind-keys* ("C-c ;" . iedit-mode) ;; "C-c ;" used to be 'org-toggle-comment'
             ("C-;" . flyspell-auto-correct-previous-word))
+;;Exit insert mode by pressing j and then j quickly
+(after! 'evil-maps
+  (setq key-chord-two-keys-delay 0.1)
+  (key-chord-define evil-insert-state-map "jj" 'evil-normal-state)
+  (key-chord-mode 1)
+)
 
 ;; Configure ivy backend for swiper, org-ref, and the rest.
 (setq ivy-re-builders-alist
@@ -27,7 +33,22 @@
         (org-ref-ivy-insert-cite-link . ivy--regex-ignore-order)
         (t . ivy--regex-fuzzy))) ;; use fuzzy matching.
 
-;; Ref http://pragmaticemacs.com/emacs/search-or-swipe-for-the-current-word/
+;; Fuzzy all the way! Otherwise, start input with '^' for fuzzy mathcing.
+(setq ivy-initial-inputs-alist nil)
+(use-package ivy
+  :init (setq ivy-use-virtual-buffers t)
+  :config
+  (global-set-key (kbd "C-c C-r") 'ivy-resume)
+  (ivy-mode 1))
+(use-package counsel
+  :config
+  (global-set-key (kbd "C-c g") 'counsel-git)
+  (global-set-key (kbd "C-c j") 'counsel-git-grep)
+  (global-set-key (kbd "C-c k") 'counsel-ag)
+  (global-set-key (kbd "C-s") 'swiper-isearch) ;; Use Swiper to replace isearch.
+  (counsel-mode 1))
+
+;;
 ;; version of ivy-yank-word to yank from start of word
 (defun bjm/ivy-yank-whole-word ()
   "Pull next word from buffer into search string."
@@ -44,23 +65,8 @@
           (setq amend (buffer-substring-no-properties pt (point))))))
     (when amend
       (insert (replace-regexp-in-string "  +" " " amend)))))
-
 ;; bind it to M-j
 (define-key ivy-minibuffer-map (kbd "M-j") 'bjm/ivy-yank-whole-word)
-
-(setq ivy-initial-inputs-alist nil);; Fuzzy all the way! Otherwise, start input with '^' for fuzzy mathcing.
-(use-package ivy
-  :init (setq ivy-use-virtual-buffers t)
-  :config
-  (global-set-key (kbd "C-c C-r") 'ivy-resume)
-  (ivy-mode 1))
-(use-package counsel
-  :config
-  (global-set-key (kbd "C-c g") 'counsel-git)
-  (global-set-key (kbd "C-c j") 'counsel-git-grep)
-  (global-set-key (kbd "C-c k") 'counsel-ag)
-  (global-set-key (kbd "C-s") 'swiper-isearch) ;; Use Swiper to replace isearch.
-  (counsel-mode 1))
 
 ;; Lose UI
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
@@ -104,7 +110,16 @@
 (after! doom-themes
   (setq doom-themes-enable-bold t
         doom-themes-enable-italic t
-        display-line-numbers-type nil))
+        display-line-numbers-type nil)
+
+  )
+;; (after! doom-themes
+;;   (custom-theme-set-faces
+;;    'leuven
+;;    '(org-block ((t (:extend t :background "#14232E"))))
+;;    '(org-block-begin-line ((t (:extend t :background "#14232E" :foreground "#65737E"))))
+;;    '(org-block-end-line ((t (:inherit org-block-begin-line :extend t :background "#14232E")))))
+;;   )
 
 ;; clashes with spell-fu mode.
 (setq ispell-program-name "aspell")
@@ -289,6 +304,7 @@
         org-journal-file-format "%Y-%m-%d.org"))
 
 (add-hook 'org-mode-hook 'org-roam)
+(add-hook 'org-mode-hook 'org-roam-buffer-toggle-display)
 (setq org-roam-directory "~/Documents/Orgs/roam")
 (setq org-roam-completion-everywhere t)
 
@@ -320,3 +336,5 @@
       (incollection  . "${=type=:3} ${year:4} ${title:125} ${author} ${booktitle:40}")
       (inproceedings . "${=type=:3} ${year:4} ${title:125} ${author} ${booktitle:40}")
       (t             . "${=type=:3} ${year:4} ${title:125} ${author}")))
+
+(setq-default TeX-engine 'xetex)

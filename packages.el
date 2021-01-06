@@ -88,6 +88,7 @@
 (package! flymd)
 (package! srcery-theme)
 (package! leuven-theme)
+(package! modus-themes)
 (package! spell-fu :disable t)
 (package! iedit)
 (package! smex)
